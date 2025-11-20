@@ -1,0 +1,137 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Series {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  themes      String   @default("[]") // JSON array of themes
+  lore        String?
+  tropes      String   @default("[]") // JSON array of tropes
+  worldBuilding WorldBuilding[]
+  books       Book[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Book {
+  id          String    @id @default(cuid())
+  title       String
+  subtitle    String?
+  blurb       String?
+  coverImage  String?   // Path to cover image
+  isStandalone Boolean  @default(false)
+  seriesId    String?
+  series      Series?   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  manuscript  Manuscript?
+  characters  Character[]
+  chapters    Chapter[]
+  notes       Note[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Manuscript {
+  id          String   @id @default(cuid())
+  content     String // Rich text content
+  bookId      String   @unique
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  wordCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Character {
+  id          String   @id @default(cuid())
+  name        String
+  aliases     String   @default("[]") // JSON array of nicknames and alternate names
+  image       String?  // Path to character image
+  description String?
+  profile     String? // Additional character information
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  mentions    CharacterMention[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CharacterMention {
+  id          String    @id @default(cuid())
+  characterId String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  chapterId   String?
+  chapter     Chapter?  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  context     String?
+  createdAt   DateTime  @default(now())
+}
+
+model Chapter {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  order       Int      // Chapter order
+  wordCount   Int      @default(0)
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  scenes      Scene[]
+  characterMentions CharacterMention[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([bookId, order])
+}
+
+model Scene {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  order       Int      // Scene order within chapter
+  wordCount   Int      @default(0)
+  chapterId   String
+  chapter     Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([chapterId, order])
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  type        String   // "story-overview", "research", "general", etc.
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WorldBuilding {
+  id          String   @id @default(cuid())
+  title       String
+  category    String   // "lore", "theme", "trope", "location", "magic-system", etc.
+  content     String
+  seriesId    String
+  series      Series   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model WordCountHistory {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  wordsAdded  Int      // Words added (drafting)
+  wordsRevised Int     // Words revised (editing)
+  totalWords  Int      // Running total
+  activityType String  // "drafting", "revising", "mixed"
+  bookId      String?  // Optional: track per book
+  notes       String?  // Optional notes about the session
+  createdAt   DateTime @default(now())
+}
