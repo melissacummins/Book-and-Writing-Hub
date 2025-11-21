@@ -12,9 +12,6 @@ export default function SeriesPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    themes: '',
-    lore: '',
-    tropes: '',
   })
 
   useEffect(() => {
@@ -51,19 +48,22 @@ export default function SeriesPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...formData,
-          themes: formData.themes.split(',').map(t => t.trim()).filter(Boolean),
-          tropes: formData.tropes.split(',').map(t => t.trim()).filter(Boolean),
+          name: formData.name,
+          description: formData.description,
         }),
       })
 
       if (res.ok) {
-        setFormData({ name: '', description: '', themes: '', lore: '', tropes: '' })
+        setFormData({ name: '', description: '' })
         setShowForm(false)
         fetchSeries()
+      } else {
+        const error = await res.json()
+        alert(`Error creating series: ${error.error || 'Unknown error'}`)
       }
     } catch (error) {
       console.error('Error creating series:', error)
+      alert('Error creating series. Please make sure you initialized the database at /api/init')
     }
   }
 
@@ -113,46 +113,13 @@ export default function SeriesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium mb-2">Description (optional)</label>
                 <textarea
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   rows={3}
                   placeholder="Brief description of the series"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Themes (comma-separated)</label>
-                <input
-                  type="text"
-                  value={formData.themes}
-                  onChange={e => setFormData({ ...formData, themes: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="e.g., Adventure, Romance, Mystery"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Tropes (comma-separated)</label>
-                <input
-                  type="text"
-                  value={formData.tropes}
-                  onChange={e => setFormData({ ...formData, tropes: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  placeholder="e.g., Enemies to Lovers, Chosen One, Found Family"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-2">Lore</label>
-                <textarea
-                  value={formData.lore}
-                  onChange={e => setFormData({ ...formData, lore: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  rows={4}
-                  placeholder="Background lore and world information"
                 />
               </div>
 
@@ -171,14 +138,22 @@ export default function SeriesPage() {
             <div className="text-6xl mb-4">📚</div>
             <h2 className="text-2xl font-bold mb-2">No series yet</h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
-              Create your first book series to get started
+              Create your first book series or go to Books to create standalones
             </p>
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              Create Series
-            </button>
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => setShowForm(true)}
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+              >
+                Create Series
+              </button>
+              <Link
+                href="/books"
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-block"
+              >
+                Go to Books
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">

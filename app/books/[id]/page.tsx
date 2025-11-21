@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -26,11 +26,7 @@ export default function BookDetailPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [wordCount, setWordCount] = useState(0)
 
-  useEffect(() => {
-    fetchBookData()
-  }, [bookId])
-
-  async function fetchBookData() {
+  const fetchBookData = useCallback(async () => {
     try {
       const res = await fetch(`/api/books/${bookId}`)
       if (!res.ok) {
@@ -48,9 +44,9 @@ export default function BookDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [bookId, router])
 
-  async function saveManuscript(content: string) {
+  const saveManuscript = useCallback(async (content: string) => {
     setSaving(true)
     try {
       const res = await fetch(`/api/manuscripts/${bookId}`, {
@@ -70,7 +66,11 @@ export default function BookDetailPage() {
     } finally {
       setSaving(false)
     }
-  }
+  }, [bookId])
+
+  useEffect(() => {
+    fetchBookData()
+  }, [fetchBookData])
 
   // Auto-save every 30 seconds
   useEffect(() => {
@@ -81,7 +81,7 @@ export default function BookDetailPage() {
     }, 30000)
 
     return () => clearTimeout(timer)
-  }, [manuscript?.content])
+  }, [manuscript?.content, saveManuscript])
 
   if (loading) {
     return (
