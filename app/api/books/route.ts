@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readDB, writeDB, generateId, timestamp } from '@/lib/db'
-import type { Book } from '@/lib/types'
+import { getAllBooks, createBook } from '@/lib/db-postgres'
 
 // GET all books
 export async function GET() {
   try {
-    const db = await readDB()
-    return NextResponse.json(db.books)
+    const books = await getAllBooks()
+    return NextResponse.json(books)
   } catch (error) {
     console.error('Error fetching books:', error)
     return NextResponse.json({ error: 'Failed to fetch books' }, { status: 500 })
@@ -17,22 +16,14 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const db = await readDB()
-
-    const newBook: Book = {
-      id: generateId(),
+    const newBook = await createBook({
       title: body.title,
-      subtitle: body.subtitle || undefined,
-      blurb: body.blurb || undefined,
-      coverImage: body.coverImage || undefined,
+      subtitle: body.subtitle,
+      blurb: body.blurb,
+      coverImage: body.coverImage,
       isStandalone: body.isStandalone ?? true,
-      seriesId: body.seriesId || undefined,
-      createdAt: timestamp(),
-      updatedAt: timestamp(),
-    }
-
-    db.books.push(newBook)
-    await writeDB(db)
+      seriesId: body.seriesId,
+    })
 
     return NextResponse.json(newBook, { status: 201 })
   } catch (error) {

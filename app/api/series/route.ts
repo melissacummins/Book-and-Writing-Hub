@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readDB, writeDB, generateId, timestamp } from '@/lib/db'
-import type { Series } from '@/lib/types'
+import { getAllSeries, createSeries } from '@/lib/db-postgres'
 
 // GET all series
 export async function GET() {
   try {
-    const db = await readDB()
-    return NextResponse.json(db.series)
+    const series = await getAllSeries()
+    return NextResponse.json(series)
   } catch (error) {
     console.error('Error fetching series:', error)
     return NextResponse.json({ error: 'Failed to fetch series' }, { status: 500 })
@@ -17,21 +16,13 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const db = await readDB()
-
-    const newSeries: Series = {
-      id: generateId(),
+    const newSeries = await createSeries({
       name: body.name,
-      description: body.description || undefined,
+      description: body.description,
       themes: body.themes || [],
-      lore: body.lore || undefined,
+      lore: body.lore,
       tropes: body.tropes || [],
-      createdAt: timestamp(),
-      updatedAt: timestamp(),
-    }
-
-    db.series.push(newSeries)
-    await writeDB(db)
+    })
 
     return NextResponse.json(newSeries, { status: 201 })
   } catch (error) {

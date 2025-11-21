@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { readDB, writeDB, timestamp } from '@/lib/db'
+import { getSeriesById, updateSeries, deleteSeries, getAllBooks } from '@/lib/db-postgres'
+import { sql } from '@vercel/postgres'
 
 // GET single series
 export async function GET(
@@ -7,15 +8,22 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const db = await readDB()
-    const series = db.series.find(s => s.id === params.id)
+    const series = await getSeriesById(params.id)
 
     if (!series) {
       return NextResponse.json({ error: 'Series not found' }, { status: 404 })
     }
 
     // Get books in this series
-    const books = db.books.filter(b => b.seriesId === params.id)
+    const { rows } = await sql`SELECT * FROM books WHERE series_id = ${params.id}`
+    const books = rows.map(row => ({
+      ...row,
+      seriesId: row.series_id,
+      isStandalone: row.is_standalone,
+      coverImage: row.cover_image,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }))
 
     return NextResponse.json({ ...series, books })
   } catch (error) {
@@ -31,26 +39,13 @@ export async function PUT(
 ) {
   try {
     const body = await request.json()
-    const db = await readDB()
+    const updatedSeries = await updateSeries(params.id, body)
 
-    const index = db.series.findIndex(s => s.id === params.id)
-    if (index === -1) {
+    if (!updatedSeries) {
       return NextResponse.json({ error: 'Series not found' }, { status: 404 })
     }
 
-    db.series[index] = {
-      ...db.series[index],
-      name: body.name ?? db.series[index].name,
-      description: body.description ?? db.series[index].description,
-      themes: body.themes ?? db.series[index].themes,
-      lore: body.lore ?? db.series[index].lore,
-      tropes: body.tropes ?? db.series[index].tropes,
-      updatedAt: timestamp(),
-    }
-
-    await writeDB(db)
-
-    return NextResponse.json(db.series[index])
+    return NextResponse.json(updatedSeries)
   } catch (error) {
     console.error('Error updating series:', error)
     return NextResponse.json({ error: 'Failed to update series' }, { status: 500 })
@@ -63,20 +58,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const db = await readDB()
-
-    const index = db.series.findIndex(s => s.id === params.id)
-    if (index === -1) {
-      return NextResponse.json({ error: 'Series not found' }, { status: 404 })
-    }
-
-    // Also delete all books in the series
-    db.books = db.books.filter(b => b.seriesId !== params.id)
-    db.worldBuilding = db.worldBuilding.filter(w => w.seriesId !== params.id)
-    db.series.splice(index, 1)
-
-    await writeDB(db)
-
+    await deleteSeries(params.id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting series:', error)

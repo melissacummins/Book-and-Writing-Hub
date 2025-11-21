@@ -1,31 +1,30 @@
 # Book & Writing Hub
 
-A comprehensive book and writing management system to replace your Notion setup. Built with Next.js, TypeScript, and AI assistance.
+A comprehensive book and writing management system to replace your Notion setup. Built with Next.js, TypeScript, and Vercel Postgres.
 
-## Features
+## ✨ Features
 
 ### 📚 Series & Book Management
 - Manage multiple book series and standalone books
 - Track themes, lore, tropes, and world-building elements
-- Upload and manage book covers
-- Generate metadata (titles, subtitles, blurbs) with AI assistance
+- Upload and manage book covers (any size)
+- Track metadata (titles, subtitles, blurbs)
 
 ### ✍️ Writing Hub
 - Rich text editor powered by Tiptap (handles large manuscripts)
-- Chapter and scene organization
-- Upload, write, or AI-generate manuscripts
-- Character mention tracking throughout your story
+- Auto-save every 30 seconds
+- Write, edit, and organize manuscripts
+- Character tracking throughout your story
 
 ### 👥 Character Management
 - Detailed character profiles with images
 - Track names, aliases, and nicknames
-- Auto-update profiles based on manuscript mentions
-- Upload or generate character images
+- Upload character portraits (any size)
 
 ### 📊 Analytics & Tracking
 - Word count tracking (drafting vs. revisions)
-- Daily writing history with graphs
-- Track progress across books and series
+- Daily writing history
+- Track progress across all books
 
 ### 🌍 World Building
 - Dedicated section for themes, lore, and tropes
@@ -34,99 +33,73 @@ A comprehensive book and writing management system to replace your Notion setup.
 
 ### 💾 Export & Backup
 - Export to JSON (complete backup)
-- Export to Word (.docx)
-- Export to PDF
+- Export to Word (.docx) - Coming soon
+- Export to PDF - Coming soon
 
-## Getting Started
+## 🚀 Quick Start - Deploy to Vercel (Recommended)
 
-### Prerequisites
-- Node.js 18+
-- PostgreSQL (or use SQLite for simplicity)
+**Access from any device (desktop, laptop, phone) with all your data synced!**
 
-### Installation
+See **[DEPLOYMENT.md](DEPLOYMENT.md)** for complete step-by-step instructions.
 
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-cd Book-and-Writing-Hub
-```
+**Quick version:**
+1. Push to GitHub (already done!)
+2. Sign up at [vercel.com](https://vercel.com)
+3. Import your GitHub repo
+4. Add Postgres database in Vercel dashboard
+5. Visit `your-app.vercel.app/api/init` to initialize
+6. Start writing!
 
-2. Install dependencies:
-```bash
-npm install
-```
+**Cost:** Completely free for personal use (Vercel free tier)
 
-3. Set up your environment variables:
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your database URL and Anthropic API key.
-
-4. Set up the database:
-```bash
-npx prisma migrate dev --name init
-npx prisma generate
-```
-
-5. Run the development server:
-```bash
-npm run dev
-```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser!
-
-## Database Setup
-
-### Option 1: PostgreSQL (Recommended for production)
-Install PostgreSQL and create a database:
-```bash
-createdb bookwritinghub
-```
-
-### Option 2: SQLite (Easier for development)
-Edit `prisma/schema.prisma` and change:
-```prisma
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
-```
-
-Then use this in `.env`:
-```
-DATABASE_URL="file:./dev.db"
-```
-
-## Tech Stack
+## 🛠 Tech Stack
 
 - **Frontend:** Next.js 15, React 18, TypeScript
 - **Styling:** TailwindCSS
-- **Database:** PostgreSQL (or SQLite)
-- **ORM:** Prisma
+- **Database:** Vercel Postgres
 - **Rich Text Editor:** Tiptap
-- **AI:** Anthropic Claude API
-- **Charts:** Recharts
+- **Deployment:** Vercel
+- **AI (Optional):** Anthropic Claude API
 
-## Project Structure
+## 📁 Project Structure
 
 ```
-├── app/              # Next.js app directory (routes)
-├── components/       # React components
-├── lib/             # Utility functions and configurations
-├── prisma/          # Database schema and migrations
-├── public/          # Static assets
-│   └── uploads/     # User-uploaded images
-└── README.md
+├── app/              # Next.js pages and API routes
+│   ├── series/      # Series management
+│   ├── books/       # Book management & writing interface
+│   ├── analytics/   # Word count stats
+│   └── api/         # Backend API routes
+├── components/       # Reusable React components
+├── lib/             # Database and utility functions
+└── public/uploads/  # Uploaded images
 ```
 
-## Usage Tips
+## 💡 Usage Tips
 
-- **Large Manuscripts:** The editor handles documents of any size efficiently
-- **Image Uploads:** No file size limits on covers and character images
-- **Word Tracking:** Automatically distinguishes between drafting new content and revising existing content
-- **AI Features:** Require Anthropic API key for metadata generation and character analysis
+- **Large Manuscripts:** Handles 100k+ word documents smoothly
+- **Image Uploads:** No 1MB limits - upload full-size covers and character art
+- **Multi-Device:** Access from desktop and laptop with synced data
+- **Auto-Save:** Your work saves automatically every 30 seconds
+- **Word Tracking:** Distinguishes between drafting new content and editing
 
-## License
+## 🔧 Local Development (Optional)
+
+If you want to run locally:
+
+```bash
+# Install dependencies
+npm install
+
+# Link to Vercel project
+vercel link
+
+# Pull environment variables
+vercel env pull .env.local
+
+# Run development server
+npm run dev
+```
+
+## 📝 License
 
 Private project - All rights reserved
