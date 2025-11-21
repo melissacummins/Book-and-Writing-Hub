@@ -129,7 +129,7 @@ export default function RichTextEditor({
           className={`px-3 py-1 rounded ${editor.isActive('blockquote') ? 'bg-purple-600 text-white' : 'bg-white dark:bg-gray-600'}`}
           title="Quote"
         >
-          "
+          &quot;
         </button>
         <div className="w-px bg-gray-300 dark:bg-gray-600 mx-1" />
         <button
