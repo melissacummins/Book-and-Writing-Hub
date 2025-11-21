@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getSeriesById, updateSeries, deleteSeries } from '@/lib/db-postgres'
 import { sql } from '@vercel/postgres'
 
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
 // GET single series
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     const series = await getSeriesById(id)
 
     if (!series) {
@@ -36,10 +40,10 @@ export async function GET(
 // PUT update series
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     const body = await request.json()
     const updatedSeries = await updateSeries(id, body)
 
@@ -57,10 +61,10 @@ export async function PUT(
 // DELETE series
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     await deleteSeries(id)
     return NextResponse.json({ success: true })
   } catch (error) {

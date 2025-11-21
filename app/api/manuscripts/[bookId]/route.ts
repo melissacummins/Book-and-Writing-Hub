@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getManuscriptByBookId, createOrUpdateManuscript, createWordCountHistory } from '@/lib/db-postgres'
 import { countWords } from '@/lib/utils'
 
+type RouteContext = {
+  params: Promise<{ bookId: string }>
+}
+
 // GET manuscript for a book
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ bookId: string }> }
+  context: RouteContext
 ) {
   try {
-    const { bookId } = await params
+    const { bookId } = await context.params
     const manuscript = await getManuscriptByBookId(bookId)
 
     if (!manuscript) {
@@ -25,10 +29,10 @@ export async function GET(
 // PUT create or update manuscript
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ bookId: string }> }
+  context: RouteContext
 ) {
   try {
-    const { bookId } = await params
+    const { bookId } = await context.params
     const body = await request.json()
     const wordCount = countWords(body.content || '')
 

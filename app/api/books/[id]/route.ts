@@ -9,13 +9,17 @@ import {
   getNotesByBookId
 } from '@/lib/db-postgres'
 
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
 // GET single book with all related data
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     const book = await getBookById(id)
 
     if (!book) {
@@ -46,10 +50,10 @@ export async function GET(
 // PUT update book
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     const body = await request.json()
     const updatedBook = await updateBook(id, body)
 
@@ -67,10 +71,10 @@ export async function PUT(
 // DELETE book
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  context: RouteContext
 ) {
   try {
-    const { id } = await params
+    const { id } = await context.params
     await deleteBook(id)
     return NextResponse.json({ success: true })
   } catch (error) {
