@@ -5,10 +5,11 @@ import { countWords } from '@/lib/utils'
 // GET manuscript for a book
 export async function GET(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
-    const manuscript = await getManuscriptByBookId(params.bookId)
+    const { bookId } = await params
+    const manuscript = await getManuscriptByBookId(bookId)
 
     if (!manuscript) {
       return NextResponse.json({ error: 'Manuscript not found' }, { status: 404 })
@@ -24,17 +25,18 @@ export async function GET(
 // PUT create or update manuscript
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { bookId: string } }
+  { params }: { params: Promise<{ bookId: string }> }
 ) {
   try {
+    const { bookId } = await params
     const body = await request.json()
     const wordCount = countWords(body.content || '')
 
     // Get existing manuscript to track changes
-    const existing = await getManuscriptByBookId(params.bookId)
+    const existing = await getManuscriptByBookId(bookId)
 
     // Save manuscript
-    const manuscript = await createOrUpdateManuscript(params.bookId, body.content || '', wordCount)
+    const manuscript = await createOrUpdateManuscript(bookId, body.content || '', wordCount)
 
     // Track word count changes
     if (existing) {
@@ -46,7 +48,7 @@ export async function PUT(
           wordsRevised: diff < 0 ? Math.abs(diff) : 0,
           totalWords: wordCount,
           activityType: diff > 0 ? 'drafting' : 'revising',
-          bookId: params.bookId,
+          bookId: bookId,
         })
       }
     } else if (wordCount > 0) {
@@ -56,7 +58,7 @@ export async function PUT(
         wordsRevised: 0,
         totalWords: wordCount,
         activityType: 'drafting',
-        bookId: params.bookId,
+        bookId: bookId,
       })
     }
 

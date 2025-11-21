@@ -1,21 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSeriesById, updateSeries, deleteSeries, getAllBooks } from '@/lib/db-postgres'
+import { getSeriesById, updateSeries, deleteSeries } from '@/lib/db-postgres'
 import { sql } from '@vercel/postgres'
 
 // GET single series
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const series = await getSeriesById(params.id)
+    const { id } = await params
+    const series = await getSeriesById(id)
 
     if (!series) {
       return NextResponse.json({ error: 'Series not found' }, { status: 404 })
     }
 
     // Get books in this series
-    const { rows } = await sql`SELECT * FROM books WHERE series_id = ${params.id}`
+    const { rows } = await sql`SELECT * FROM books WHERE series_id = ${id}`
     const books = rows.map(row => ({
       ...row,
       seriesId: row.series_id,
@@ -35,11 +36,12 @@ export async function GET(
 // PUT update series
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const body = await request.json()
-    const updatedSeries = await updateSeries(params.id, body)
+    const updatedSeries = await updateSeries(id, body)
 
     if (!updatedSeries) {
       return NextResponse.json({ error: 'Series not found' }, { status: 404 })
@@ -55,10 +57,11 @@ export async function PUT(
 // DELETE series
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteSeries(params.id)
+    const { id } = await params
+    await deleteSeries(id)
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting series:', error)
